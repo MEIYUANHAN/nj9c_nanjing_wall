@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}创建新城墙段落 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">创建新城墙段落</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.name.label_tag }}
+        {{ form.name }}
+        {{ form.description.label_tag }}
+        {{ form.description }}
+        {{ form.event.label_tag }}
+        {{ form.event }}
+        {{ form.length.label_tag }}
+        {{ form.length }}
+        {{ form.built_year.label_tag }}
+        {{ form.built_year }}
+        {{ form.location.label_tag }}  <!-- 显示地址字段标签 -->
+        {{ form.location }}  <!-- 显示地址字段输入框 -->
+        {{ form.image.label_tag }}
+        {{ form.image }}
+        <br>
+        <button type="submit">提交</button>
+    </form>
+    <br><br><br><br><br><br><br><br><br>
+</div>
+{% endblock %}

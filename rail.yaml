@@ -1,0 +1,6 @@
+project_type: "django"
+start_command: "gunicorn nanjing_wall_project.wsgi:application --bind 0.0.0.0:8000"
+runtime: "python3.12"
+env:
+  - "DJANGO_SETTINGS_MODULE=nanjing_wall_project.settings"
+  - "PYTHONPATH=/app"

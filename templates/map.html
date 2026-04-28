@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+
+{% block title %}交互式地图-南京城墙{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    <!-- 引入 Leaflet 地图库的 CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            height: 100%;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* 信息面板 */
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 800;
+            max-width: 320px;
+            border-left: 5px solid #8b0000;
+            margin-top: 99px;
+        }
+        
+        .info-panel h1 {
+            font-size: 22px;
+            color: #8b0000;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #8b0000;
+            padding-bottom: 10px;
+        }
+        
+        .info-panel p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #8b0000;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 图例 */
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            margin-bottom: 210px;
+        }
+        
+        .legend h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .legend-line {
+            width: 30px;
+            height: 4px;
+            margin-right: 10px;
+            background: linear-gradient(90deg, #8b0000, #d32f2f);
+            border-radius: 2px;
+        }
+        
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #d32f2f;
+            margin-right: 10px;
+            border: 3px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .legend-dot.major {
+            background: #8b0000;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 自定义弹窗样式 - 无图片版本 */
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            padding: 0;
+            overflow: hidden;
+            border: 2px solid #8b0000;
+        }
+        
+        .custom-popup .leaflet-popup-content {
+            margin: 0;
+            width: 260px !important;
+        }
+        
+        .popup-header {
+            background: linear-gradient(135deg, #8b0000 0%, #d32f2f 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .popup-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+        
+        .popup-header p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* CSS 渐变背景代替图片 */
+        .popup-image-placeholder {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #8b0000 0%, #d32f2f 50%, #8b0000 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .popup-body {
+            padding: 15px;
+            background: #fff;
+        }
+        
+        .popup-body p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        
+        .popup-info {
+            background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .popup-info div {
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .popup-info strong {
+            color: #8b0000;
+        }
+
+        /* 控制按钮 */
+        .control-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 94px;
+        }
+        
+        .btn {
+            background: white;
+            border: 2px solid #8b0000;
+            color: #8b0000;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            background: #8b0000;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* 加载提示 */
+        .loading-tip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 999;
+            text-align: center;
+            display: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .info-panel {
+                max-width: 280px;
+                margin-top: 200px;
+            }
+            
+            .info-panel h1 {
+                font-size: 18px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-btn {
+                right: 10px;
+                margin-top: 94px;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="map-container">
+    <div id="map"></div>
+
+    <!-- 信息面板 -->
+    <div class="info-panel">
+        <h1>🏯 南京明城墙</h1>
+        <p>南京明城墙始建于 1366 年，历时 21 年建成，是世界最长、规模最大、保存原真性最好的古代城垣。</p>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">35.3km</div>
+                <div class="stat-label">现存长度</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">13</div>
+                <div class="stat-label">内城门</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">18</div>
+                <div class="stat-label">外城门</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">650+</div>
+                <div class="stat-label">历史年份</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图例 -->
+    <div class="legend">
+        <h3>📍 图例说明</h3>
+        <div class="legend-item">
+            <div class="legend-line"></div>
+            <span>明城墙路线</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot major"></div>
+            <span>主要城门</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot"></div>
+            <span>其他城门/景点</span>
+        </div>
+    </div>
+
+    <!-- 控制按钮 -->
+    <div class="control-btn">
+        <button class="btn" onclick="showAllGates()">📍 显示所有城门</button>
+        <button class="btn" onclick="resetView()">🔄 重置视图</button>
+        <button class="btn" onclick="toggleSatellite()">🛰️ 切换卫星图</button>
+    </div>
+</div>
+    <!-- 引入 Leaflet 地图库的 JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // 初始化地图
+        var map = L.map('map').setView([32.06, 118.79], 13);
+
+        // 街道地图底图（加载更快）
+        var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 卫星地图底图（可选切换）
+        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: '© ESRI'
+        });
+
+        var currentLayer = 'street';
+
+        // 更详细的城墙路径坐标
+        var wallCoordinates = [
+            [32.088, 118.785], [32.087, 118.790], [32.086, 118.795],
+            [32.085, 118.800], [32.084, 118.805], [32.083, 118.810],
+            [32.080, 118.815], [32.077, 118.818], [32.074, 118.820],
+            [32.071, 118.822], [32.068, 118.823], [32.065, 118.824],
+            [32.062, 118.825], [32.059, 118.826], [32.056, 118.827],
+            [32.053, 118.828], [32.050, 118.827], [32.047, 118.826],
+            [32.044, 118.824], [32.041, 118.822], [32.038, 118.819],
+            [32.035, 118.815], [32.032, 118.810], [32.029, 118.805],
+            [32.026, 118.800], [32.023, 118.795], [32.020, 118.790],
+            [32.017, 118.785], [32.014, 118.780], [32.012, 118.775],
+            [32.011, 118.770], [32.012, 118.765], [32.014, 118.760],
+            [32.017, 118.755], [32.020, 118.752], [32.024, 118.750],
+            [32.028, 118.749], [32.032, 118.750], [32.036, 118.752],
+            [32.040, 118.755], [32.044, 118.758], [32.048, 118.762],
+            [32.052, 118.766], [32.056, 118.770], [32.060, 118.774],
+            [32.064, 118.778], [32.068, 118.782], [32.072, 118.785],
+            [32.076, 118.787], [32.080, 118.786], [32.084, 118.785],
+            [32.088, 118.785]
+        ];
+
+        // 绘制城墙路径
+        var wallPath = L.polyline(wallCoordinates, {
+            color: '#8b0000',
+            weight: 7,
+            opacity: 0.85,
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(map);
+
+        // 详细的城门数据（无图片链接）
+        var gates = [
+            {
+                name: "中华门",
+                english: "Zhonghua Gate",
+                coords: [32.012, 118.790],
+                type: "major",
+                desc: "中国现存规模最大的城门，世界上保存最完好、结构最复杂的堡垒瓮城，有'天下第一瓮城'之称。",
+                year: "1366 年",
+                height: "21.45 米",
+                icon: "🏯"
+            },
+            {
+                name: "玄武门",
+                english: "Xuanwu Gate",
+                coords: [32.073, 118.795],
+                type: "major",
+                desc: "位于玄武湖南岸，是南京城墙的重要城门，也是观赏玄武湖和紫金山景色的绝佳位置。",
+                year: "1908 年",
+                height: "18 米",
+                icon: "🌊"
+            },
+            {
+                name: "中山门",
+                english: "Zhongshan Gate",
+                coords: [32.065, 118.820],
+                type: "major",
+                desc: "原名朝阳门，是明代南京城的正东门，现位于中山东路，是进入南京城的东大门。",
+                year: "1366 年",
+                height: "16.5 米",
+                icon: "🌅"
+            },
+            {
+                name: "神策门",
+                english: "Shence Gate",
+                coords: [32.085, 118.790],
+                type: "major",
+                desc: "又称和平门，是南京明城墙十三座内城门之一，也是唯一保存有清代瓮城的城门。",
+                year: "1366 年",
+                height: "17.8 米",
+                icon: "🛡️"
+            },
+            {
+                name: "汉中门",
+                english: "Hanzhong Gate",
+                coords: [32.045, 118.765],
+                type: "major",
+                desc: "位于城西，历史上是重要的交通要道，现在周边是繁华的市区，保留了部分城墙遗址。",
+                year: "1366 年",
+                height: "15 米",
+                icon: "🏙️"
+            },
+            {
+                name: "清凉门",
+                english: "Qingliang Gate",
+                coords: [32.055, 118.775],
+                type: "major",
+                desc: "位于清凉山旁，地势险要，是古代军事防御的重要关隘，现存城门和城墙保存较好。",
+                year: "1366 年",
+                height: "16 米",
+                icon: "⛰️"
+            },
+            {
+                name: "集庆门",
+                english: "Jiqing Gate",
+                coords: [32.015, 118.770],
+                type: "normal",
+                desc: "位于城墙西南段，是连接城南的重要通道，周边有丰富的历史文化遗迹。",
+                year: "1366 年",
+                height: "14 米",
+                icon: "🏛️"
+            },
+            {
+                name: "太平门",
+                english: "Taiping Gate",
+                coords: [32.072, 118.815],
+                type: "normal",
+                desc: "位于城墙东北段，靠近紫金山，是明代重要的军事防御门户。",
+                year: "1366 年",
+                height: "15.5 米",
+                icon: "🏔️"
+            },
+            {
+                name: "光华门",
+                english: "Guanghua Gate",
+                coords: [32.045, 118.825],
+                type: "normal",
+                desc: "位于城墙东南段，原名正阳门，是南京城的正南门，历史上是重要的交通枢纽。",
+                year: "1366 年",
+                height: "16 米",
+                icon: "☀️"
+            },
+            {
+                name: "水西门",
+                english: "Shuixi Gate",
+                coords: [32.030, 118.760],
+                type: "normal",
+                desc: "位于城墙西段，靠近秦淮河，是古代水路交通的重要门户。",
+                year: "1366 年",
+                height: "14.5 米",
+                icon: "🌊"
+            },
+            {
+                name: "定淮门",
+                english: "Dinghuai Gate",
+                coords: [32.065, 118.785],
+                type: "normal",
+                desc: "位于城墙西北段，是明代重要的军事防御城门，现存部分城墙遗址。",
+                year: "1366 年",
+                height: "15 米",
+                icon: "🏰"
+            },
+            {
+                name: "仪凤门",
+                english: "Yifeng Gate",
+                coords: [32.078, 118.780],
+                type: "normal",
+                desc: "位于城墙北段，靠近狮子山，是南京城墙的重要城门之一。",
+                year: "1366 年",
+                height: "16 米",
+                icon: "🦁"
+            }
+        ];
+
+        // 存储所有标记
+        var gateMarkers = [];
+
+        // 添加城门标记
+        gates.forEach(function(gate) {
+            var size = gate.type === "major" ? 20 : 14;
+            var color = gate.type === "major" ? "#8b0000" : "#d32f2f";
+            
+            var icon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style='background-color:${color}; width:${size}px; height:${size}px; border-radius:50%; border:3px solid white; box-shadow:0 0 8px rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; font-size:${size-6}px;'>${gate.type === "major" ? gate.icon : ""}</div>`,
+                iconSize: [size, size],
+                iconAnchor: [size/2, size/2]
+            });
+
+            var marker = L.marker(gate.coords, {icon: icon}).addTo(map);
+            gateMarkers.push(marker);
+            
+            // 创建详细的弹窗内容（无图片）
+            var popupContent = `
+                <div class="popup-header">
+                    <h3>${gate.icon} ${gate.name}</h3>
+                    <p>${gate.english}</p>
+                </div>
+                <div class="popup-image-placeholder">
+                    ${gate.icon}
+                </div>
+                <div class="popup-body">
+                    <p>${gate.desc}</p>
+                    <div class="popup-info">
+                        <div><strong>📅 建造年份</strong> <span>${gate.year}</span></div>
+                        <div><strong>📏 城门高度</strong> <span>${gate.height}</span></div>
+                        <div><strong>🏷️ 类型</strong> <span>${gate.type === "major" ? "主要城门" : "其他城门"}</span></div>
+                    </div>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent, {
+                className: 'custom-popup',
+                maxWidth: 280
+            });
+        });
+
+        // 城墙鼠标交互效果
+        wallPath.on('mouseover', function() {
+            this.setStyle({ weight: 10, color: '#d32f2f' });
+        });
+        
+        wallPath.on('mouseout', function() {
+            this.setStyle({ weight: 7, color: '#8b0000' });
+        });
+
+        // 城墙点击显示信息
+        wallPath.on('click', function() {
+            alert("🏯 南京明城墙\n\n📏 全长：35.3 公里（现存）\n📅 建造时间：1366-1386 年\n🌍 地位：世界最长、保存最完好的古代城垣\n🧱 用砖：约 3.5 亿块\n\n点击城门标记查看详细信息！");
+        });
+
+        // 功能函数
+        function showAllGates() {
+            gateMarkers.forEach(function(marker) {
+                map.addLayer(marker);
+            });
+            map.fitBounds(L.featureGroup(gateMarkers).getBounds(), {padding: [50, 50]});
+        }
+
+        function resetView() {
+            var group = new L.featureGroup([wallPath]);
+            map.fitBounds(group.getBounds(), {padding: [50, 50]});
+        }
+
+        function toggleSatellite() {
+            if (currentLayer === 'street') {
+                map.removeLayer(streetLayer);
+                satelliteLayer.addTo(map);
+                currentLayer = 'satellite';
+            } else {
+                map.removeLayer(satelliteLayer);
+                streetLayer.addTo(map);
+                currentLayer = 'street';
+            }
+        }
+
+        // 自动调整视野
+        resetView();
+
+        // 添加缩放控制
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+
+        // 添加比例尺
+        L.control.scale({
+            position: 'bottomleft',
+            metric: true,
+            imperial: false
+        }).addTo(map);
+
+    </script>
+</body>
+</html>
+
+{% endblock %}
+
+
+

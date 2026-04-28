@@ -1,0 +1,103 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}首页 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<!-- 英雄区域 -->
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">南京城墙</h1>
+        <p class="lead">世界现存最长、规模最大、保存原真性最好的古代城垣</p>
+        <a href="#sections" class="btn btn-primary btn-lg mt-3">
+            <i class="fas fa-arrow-down"></i> 探索城墙
+        </a>
+    </div>
+</div>
+
+<!-- 简介区域 -->
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <h2 class="mb-4">历史简介</h2>
+            <p class="lead">
+                南京城墙始建于1366年（元至正廿六年），全部完工于1393年（明洪武廿六年），
+                历时达28年。城墙周长约35.3公里，现存25.1公里，是中国现存规模最大的城墙，
+                也是世界第一大城垣。
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- 城墙段落展示 -->
+<div class="container" id="sections">
+    <h2 class="text-center mb-5">主要城墙段落</h2>
+    <div class="row">
+        {% for section in sections %}
+        <div class="col-md-4 mb-4">
+            <div class="card section-card h-100">
+                {% if section.image %}
+                <img src="{{ section.image.url }}" class="card-img-top section-img" alt="{{ section.name }}">
+                {% else %}
+                <img src="https://via.placeholder.com/400x200?text={{ section.name }}" 
+                     class="card-img-top section-img" alt="{{ section.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ section.name }}</h5>
+                    <p class="card-text">
+                        <i class="fas fa-map-marker-alt"></i> {{ section.location }}
+                    </p>
+                    <p class="card-text">{{ section.description|truncatechars:50 }}</p>
+                    <p class="card-text">
+                        <i class="fas fa-calendar-alt"></i> 建造年代：{{ section.built_year }}
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-ruler"></i> 长度：{{ section.length }}
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-user"></i> 创作者：{{ section.user }}
+                    </p>
+                    <a href="{% url 'section_detail' section.id %}" class="btn btn-outline-primary">
+                        查看详情 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p class="text-muted">暂无城墙数据，请先通过后台添加。</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 特色功能 -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 text-center mb-4">
+            <div class="p-4 border rounded">
+                <i class="fas fa-map-marked-alt fa-3x text-primary mb-3"></i>
+                <h4>交互式地图</h4>
+                <p>查看城墙分布和地理位置</p>
+                <a href="{% url 'interactive_map' %}" class="btn btn-outline-primary">查看地图</a>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="p-4 border rounded">
+                <i class="fas fa-history fa-3x text-success mb-3"></i>
+                <h4>历史时间线</h4>
+                <p>了解城墙的建造和发展历程</p>
+                <a href="{% url 'history' %}" class="btn btn-outline-primary">查看历史</a>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="p-4 border rounded">
+                <i class="fas fa-images fa-3x text-warning mb-3"></i>
+                <h4>图片展示</h4>
+                <p>欣赏城墙的壮丽景色</p>
+                <a href="{% url 'picture_gallery' %}" class="btn btn-outline-primary">查看图片</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

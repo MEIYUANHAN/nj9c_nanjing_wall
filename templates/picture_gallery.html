@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}图片画廊 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">南京城墙图片画廊</h1>
+    <div class="row">
+        {% for section in sections %}
+        {% if section.image %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="{{ section.image.url }}" class="card-img-top" alt="{{ section.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ section.name }}</h5>
+                    
+                    <a href="{% url 'section_detail' section.id %}" class="btn btn-outline-primary">
+                        查看详情 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

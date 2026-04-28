@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }}的个人主页 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.username }}的个人主页</title>
+</head>
+
+<body>
+    <h1>{{ user.username }}的个人主页</h1>
+    {% if user.userprofile.avatar %}
+        <img src="{{ user.userprofile.avatar.url }}" alt="头像" width="100">
+    {% endif %}
+    <p>{{ user.userprofile.bio }}</p>
+    <h2>创作列表</h2>
+    <ul>
+        {% for section in user.wallsection_set.all %}
+            <li>
+                <h3>{{ section.name }}</h3>
+                <p>{{ section.description }}</p>
+                <p>创建时间：{{ section.created_at }}</p>
+            </li>
+        {% empty %}
+            <li>暂无创作内容。</li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>
+{% endblock %}

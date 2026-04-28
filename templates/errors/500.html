@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器错误 - 500错误</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
+            50% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
+            100% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 800;
+            color: #f5576c;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+        
+        .error-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .support-info {
+            background: #fff3f3;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #f5576c;
+        }
+        
+        .support-text {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 1rem;
+        }
+        
+        .home-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .home-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .refresh-button {
+            display: inline-block;
+            margin-left: 1rem;
+            padding: 12px 30px;
+            background: #f8f9fa;
+            color: #f5576c;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid #f5576c;
+        }
+        
+        .refresh-button:hover {
+            background: #f5576c;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+            }
+            
+            .button-group {
+                display: block;
+            }
+            
+            .refresh-button {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-code">500</div>
+        <h1 class="error-title">服务器开小差了</h1>
+        <p class="error-message">很抱歉，我们的服务器暂时无法为您提供服务。技术人员已经在紧急修复中...</p>
+        
+        <div class="support-info">
+            <strong>技术支持热线：</strong><br>
+            📞 180-6163-5286<br>
+            📧 575196309@qq.com
+        </div>
+        
+        <p class="support-text">如果您急需帮助，请联系我们的客服团队</p>
+        
+        <div style="margin-top: 2rem;">
+            <a href="/" class="home-button">返回首页</a>
+            <a href="#" onclick="location.reload()" class="refresh-button">重新加载</a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 自动刷新倒计时
+            let countdown = 30;
+            const refreshButton = document.querySelector('.refresh-button');
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    location.reload();
+                }
+            }, 1000);
+            
+            refreshButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.innerHTML = '<i class="spinner"></i> 正在重试...';
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

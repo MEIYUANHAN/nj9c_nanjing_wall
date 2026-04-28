@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}创建历史事件 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">创建历史事件</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.title.label_tag }}
+        {{ form.title }}
+        {{ form.year.label_tag }}
+        {{ form.year }}
+        {{ form.description.label_tag }}
+        {{ form.description }}
+        {{ form.wall_section.label_tag }}
+        {{ form.wall_section }}
+        <br>
+        <button type="submit" class="btn btn-primary mt-3">提交</button>
+    </form>
+    <br><br><br><br><br><br><br><br><br>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拒绝访问 - 403错误</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .error-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent 20%, rgba(79, 172, 254, 0.1) 20%, rgba(79, 172, 254, 0.1) 30%, transparent 30%);
+            background-size: 100px 100px;
+            animation: rotate 20s linear infinite;
+            z-index: 0;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 800;
+            color: #4facfe;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+        
+        .error-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .permission-list {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+        
+        .permission-list h3 {
+            color: #4facfe;
+            margin-bottom: 1rem;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .permission-icon {
+            color: #4facfe;
+            margin-right: 0.5rem;
+        }
+        
+        .home-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .home-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .login-button {
+            display: inline-block;
+            margin-left: 1rem;
+            padding: 12px 30px;
+            background: #ffffff;
+            color: #4facfe;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid #4facfe;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-button:hover {
+            background: #4facfe;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+            }
+            
+            .button-group {
+                display: block;
+            }
+            
+            .login-button {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="content">
+            <div class="error-code">403</div>
+            <h1 class="error-title">拒绝访问</h1>
+            <p class="error-message">抱歉，您没有权限访问这个页面。可能是因为您没有登录，或者您的账户权限不足。</p>
+            <div class="permission-list">
+                <h3>您可能缺少以下权限：</h3>
+                <div class="permission-item"><span class="permission-icon">🔒</span> 访问受限资源的权限</div>
+                <div class="permission-item"><span class="permission-icon">👤</span> 用户登录权限</div>
+                <div class="permission-item"><span class="permission-icon">⚙️</span> 管理员权限</div>
+            </div>
+            <div class="button-group">
+                <a href="/" class="home-button">返回首页</a>
+                <a href="/login/" class="login-button">登录账户</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<!DOCTYPE html>

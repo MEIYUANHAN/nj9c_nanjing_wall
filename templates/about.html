@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+
+
+{%block title %}关于我们 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <style>
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 2800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+        }
+        .member-tag {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    
+        <h1>这是我们的小课题项目</h1>
+
+        <section>
+            <h2>👥 小组成员</h2>
+            <ul class="members">
+                <!-- 动态生成成员标签 -->
+                <li class="member-tag">梅元瀚</li>
+                <li class="member-tag">林钰涵</li>
+                <li class="member-tag">陆一睿</li>
+                <li class="member-tag">陈佳乐</li>
+                <li class="member-tag">李雨霏</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>💻 参加比赛方式</h2>
+            <p>开发一个介绍<strong>南京城墙历史</strong>的简易交互式网页。</p >
+        </section>
+
+        <section>
+            <h2>🎯 活动宗旨</h2>
+            <ul>
+                <li>提高科技创新意识和科学素养，培养科技创新人才。</li>
+                <li>激发学生的创新热情，营造学科学、爱科学、讲科学、用科学的良好氛围。</li>
+                <li>培养科学兴趣和创新精神，像科学家那样思考，激活创新创造的潜力。</li>
+                <li>丰富学生的课外活动和作业形式。</li>
+                <li>鼓励学生关注社会、科技、文化等领域的问题，并通过研究提出自己的见解或解决方案。</li>
+            </ul>
+            <p><em>（注：学校决定在暑假期间组织小课题研究比赛）</em></p >
+        </section>
+        <br><br><br><br><br><br><br><br><br>
+    
+
+</body>
+</html>
+{% endblock %}
