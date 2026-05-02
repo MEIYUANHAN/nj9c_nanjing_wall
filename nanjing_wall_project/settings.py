@@ -110,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'https://nj9cmcq.up.railway.app']
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'UTC+8'
 
 USE_I18N = True
 
