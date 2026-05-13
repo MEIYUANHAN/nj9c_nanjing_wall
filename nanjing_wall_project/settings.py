@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 #python manage.py runserver
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'https://nj9cmcq.up.railway.app']
 TIME_ZONE = 'Asia/Shanghai'
 
