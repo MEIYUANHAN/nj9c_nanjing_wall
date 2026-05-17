@@ -41,7 +41,8 @@ def check_content_with_deepseek(content, api_key=None):
         )
         
         # 获取审核结果
-        result = response.choices[0].message.content.strip()
+        message = response.choices[0].message
+        result = (message.content or "").strip()
         
         # 判断审核结果
         if result.startswith("通过"):
