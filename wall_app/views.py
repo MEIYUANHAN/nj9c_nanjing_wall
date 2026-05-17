@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import WallSection, UserContribution, HistoricalEvent
 from .forms import UserRegisterForm, UserContributionForm, createhistoricaleventForm
+from .utils import check_contribution_with_deepseek  # 导入内容审核函数
 
 def home(request):
     """首页视图"""
@@ -74,10 +75,29 @@ def create_contribution(request):
     else:
         form = UserContributionForm(data=request.POST, files=request.FILES)  # 注意这里要加上 files=request.FILES，因为有文件上传
         if form.is_valid():
-            contribution = form.save(commit=False)
-            contribution.user = request.user
-            contribution.save()
-            return redirect('home')
+            # 准备审核数据
+            contribution_data = {
+                'name': form.cleaned_data.get('name', ''),
+                'location': form.cleaned_data.get('location', ''),
+                'description': form.cleaned_data.get('description', ''),
+                'built_year': form.cleaned_data.get('built_year', ''),
+                'length': form.cleaned_data.get('length', '')
+            }
+            
+            # 调用DeepSeek API审核内容
+            is_approved, message = check_contribution_with_deepseek(contribution_data)
+            
+            if is_approved:
+                # 审核通过，保存贡献
+                contribution = form.save(commit=False)
+                contribution.user = request.user
+                contribution.save()
+                messages.success(request, '贡献提交成功！内容已通过审核。')
+                return redirect('home')
+            else:
+                # 审核未通过，返回错误信息
+                messages.error(request, f'内容审核未通过：{message}')
+                return render(request, 'create_contribution.html', {'form': form})
         else:
             return render(request, 'create_contribution.html', {'form': form})
             
