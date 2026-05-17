@@ -10,7 +10,7 @@ class WallSection(models.Model):
     length = models.CharField(max_length=50, verbose_name="长度")
     description = models.TextField(verbose_name="详细描述")
     event = models.TextField(verbose_name="相关历史事件", null=True, blank=True)
-    image = models.ImageField(upload_to='static/', verbose_name="图片", blank=True)
+    image = models.ImageField(upload_to='images/', verbose_name="图片", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     objects = models.Manager()  # 默认管理器
     def __str__(self):
@@ -63,7 +63,7 @@ class UserContribution(models.Model):
     built_year = models.CharField(max_length=50, verbose_name="建造年代", null=True, blank=True)
     length = models.CharField(max_length=50, verbose_name="长度", null=True, blank=True)
     description = models.TextField(verbose_name="详细描述",null=True, blank=True)
-    image = models.ImageField(upload_to='static/', verbose_name="图片", blank=True)
+    image = models.ImageField(upload_to='images/', verbose_name="图片", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
     def __str__(self):
