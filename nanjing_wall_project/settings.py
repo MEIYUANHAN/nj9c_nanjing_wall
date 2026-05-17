@@ -28,8 +28,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["nj9cmcq1.up.railway.app", "localhost", "127.0.0.1","nj9cmcq.up.railway.app"]
 
-load_dotenv()
-
 
 # Application definition
 
