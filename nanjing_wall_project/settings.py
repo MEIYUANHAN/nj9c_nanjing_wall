@@ -38,8 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bootstrap3',  # 添加 django-bootstrap3
-    'wall_app',    # 添加我们的应用
+    'bootstrap3',              # 添加 django-bootstrap3
+    'wall_app',                # 添加我们的应用
+    'cloudinary',              # Cloudinary 核心库
+    'cloudinary_storage',      # Django 媒体文件存储后端
 ]
 
 MIDDLEWARE = [
@@ -133,6 +135,18 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' 
 # 媒体文件配置（用于上传图片）
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Cloudinary 配置（生产环境媒体文件存储）
+# 需在 Railway 环境变量中设置 CLOUDINARY_URL，格式：
+# cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
+
+if CLOUDINARY_URL:
+    # 生产环境：使用 Cloudinary 存储媒体文件
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+else:
+    # 开发环境：使用本地文件系统
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # DeepSeek API 配置
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', 'YOUR_API_KEY_HERE')
