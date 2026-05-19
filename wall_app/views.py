@@ -135,19 +135,16 @@ def contribution_detail(request, contribution_id):
     return render(request, 'contribution_detail.html', {'contribution': contribution})
 def create_historical_event(request):
     """创建历史事件视图"""
-    section = WallSection.objects.order_by('-created_at').first() # 获取最新的城墙段落
     if request.method != 'POST':
         form = createhistoricaleventForm()
-        return render(request, 'create_historical_event.html', {'form': form, 'section': section})
+        return render(request, 'create_historical_event.html', {'form': form})
     else:
         form = createhistoricaleventForm(request.POST)
         if form.is_valid():
-            event = form.save(commit=False)
-            event.wall_section = section
-            event.save()
+            form.save()  # wall_section 已由表单字段携带，直接保存
             return redirect('home')
         else:
-            return render(request, 'create_historical_event.html', {'form': form, 'section': section})
+            return render(request, 'create_historical_event.html', {'form': form})
 def custom_404(request, exception):
     """自定义404错误页面视图"""
     return render(request, 'errors/404.html', status=404)
