@@ -38,7 +38,7 @@ cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 
 例如：
 ```
-cloudinary://123456789012345:abc123XYZ@my-cloud-name
+cloudinary://711666645586565:kbLO4Otk_9TYruhBVzajFgZHG8U@18061635286 18061635286
 ```
 
 ---
