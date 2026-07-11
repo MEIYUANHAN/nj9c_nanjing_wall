@@ -13,20 +13,32 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 加载 .env 文件（本地开发用；Railway 通过环境变量注入，不受影响）
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-clr$lbhrna6twfp#vwv9^@61x84u$#3*md@_*n1ajpsc2vw^sp'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-clr$lbhrna6twfp#vwv9^@61x84u$#3*md@_*n1ajpsc2vw^sp')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ["nj9cmcq1.up.railway.app", "localhost", "127.0.0.1","nj9cmcq.up.railway.app"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    ".trycloudflare.com",
+    ".up.railway.app",
+    "nj9cmcq1.up.railway.app",
+    "nj9cmcq.up.railway.app",
+]
 
 
 # Application definition
@@ -113,7 +125,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'zh-hans'
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'https://nj9cmcq.up.railway.app']
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'https://nj9cmcq.up.railway.app',
+    'https://*.trycloudflare.com',
+]
 TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
@@ -149,11 +165,15 @@ else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # DeepSeek API 配置
-DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', 'YOUR_API_KEY_HERE')
+DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-TRUSTED_ORIGINS = ['http://localhost:8000', 'https://nj9cmcq.up.railway.app']
+TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'https://nj9cmcq.up.railway.app',
+    'https://*.trycloudflare.com',
+]
