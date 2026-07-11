@@ -129,6 +129,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'https://nj9cmcq.up.railway.app',
     'https://*.trycloudflare.com',
+    'https://*.up.railway.app',
 ]
 TIME_ZONE = 'Asia/Shanghai'
 
@@ -176,4 +177,5 @@ TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'https://nj9cmcq.up.railway.app',
     'https://*.trycloudflare.com',
+    'https://*.up.railway.app',
 ]
