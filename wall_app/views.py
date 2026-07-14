@@ -28,6 +28,10 @@ def section_detail(request, section_id):
 def about_page(request):
     return render(request, 'about.html')
 
+def mer_page(request):
+    """彩蛋页面"""
+    return render(request, 'mer.html')
+
 def interactive_map(request):
     """交互式地图页面"""
     sections = WallSection.objects.all()
