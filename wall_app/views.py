@@ -3,6 +3,9 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.conf import settings
+from pathlib import Path
 from .models import WallSection, UserContribution, HistoricalEvent
 from .forms import UserRegisterForm, UserContributionForm, createhistoricaleventForm
 from .utils import check_contribution_with_deepseek  # 导入内容审核函数
@@ -29,8 +32,9 @@ def about_page(request):
     return render(request, 'about.html')
 
 def mer_page(request):
-    """彩蛋页面"""
-    return render(request, 'mer.html')
+    """彩蛋页面 — 直接返回静态 HTML，不走 Django 模板引擎"""
+    mer_file = Path(settings.BASE_DIR) / 'templates' / 'mer.html'
+    return HttpResponse(mer_file.read_bytes(), content_type='text/html; charset=utf-8')
 
 def interactive_map(request):
     """交互式地图页面"""
