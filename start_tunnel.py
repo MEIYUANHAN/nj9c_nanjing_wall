@@ -33,6 +33,30 @@ def find_cloudflared():
     return None
 
 
+def publish_site_url(url):
+    """把当前主站公网网址写入 docs/site_url.txt 并推送到 GitHub，
+    供 GitHub Pages 上的公测页『当前项目网址』自动展示。"""
+    target = PROJECT_DIR / "docs" / "site_url.txt"
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(url + "\n", encoding="utf-8")
+    except Exception as e:
+        print("[WARN] 无法写入 %s: %s" % (target, e))
+        return
+    try:
+        subprocess.run(["git", "add", "docs/site_url.txt"], cwd=str(PROJECT_DIR), check=True)
+        # 仅在内容变化时提交，避免无谓提交
+        res = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=str(PROJECT_DIR))
+        if res.returncode == 0:
+            print("[OK] 本地 site_url.txt 已更新（内容未变，跳过提交）")
+            return
+        subprocess.run(["git", "commit", "-m", "chore: update public wall site URL"], cwd=str(PROJECT_DIR), check=True)
+        subprocess.run(["git", "push"], cwd=str(PROJECT_DIR), check=True)
+        print("[OK] 已推送最新主站网址，GitHub Pages 约 1 分钟后显示新地址。")
+    except Exception as e:
+        print("[WARN] site_url.txt 已写入本地，但 git 提交/推送失败（可能需要配置凭据）：%s" % e)
+
+
 def shutil_which(name):
     import shutil
     return shutil.which(name)
@@ -110,6 +134,8 @@ def main():
     print("This URL works as long as this script is running.")
     print("URL will change if you restart this script.")
     print()
+
+    publish_site_url(public_url)
 
     try:
         while True:
