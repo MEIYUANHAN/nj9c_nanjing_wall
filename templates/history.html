@@ -9,8 +9,21 @@
         {% for event in history %}
         <div class="timeline-item">
             <div class="timeline-content">
-                <h3>{{ event.year }}年 - {{ event.title }}</h3>
-                <p>{{ event.description }}</p>
+                <h3>
+                    {{ event.year }}年 - {{ event.title }}
+                    {% if event.year_confidence == 'guess' or event.description_confidence == 'guess' %}
+                        <span class="badge bg-warning text-dark">我推测</span>
+                    {% endif %}
+                </h3>
+                <p class="{% if event.description_confidence == 'guess' %}guess{% endif %}">
+                    {{ event.description }}
+                    {% if event.description_confidence == 'guess' and event.description_reason %}
+                        <span class="d-block text-muted small mt-1"><i class="fas fa-lightbulb"></i> 推测理由：{{ event.description_reason }}</span>
+                    {% endif %}
+                </p>
+                {% if event.year_confidence == 'guess' and event.year_reason %}
+                    <p class="text-muted small"><i class="fas fa-lightbulb"></i> 年份推测理由：{{ event.year_reason }}</p>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

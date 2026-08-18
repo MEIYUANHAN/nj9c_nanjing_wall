@@ -105,8 +105,18 @@
                     <div class="timeline">
                         {% for event in events %}
                         <div class="timeline-item">
-                            <h6>{{ event.year }} - {{ event.title }}</h6>
-                            <p class="text-muted small">{{ event.description }}</p>
+                            <h6>
+                                {{ event.year }} - {{ event.title }}
+                                {% if event.year_confidence == 'guess' or event.description_confidence == 'guess' %}
+                                    <span class="badge bg-warning text-dark">我推测</span>
+                                {% endif %}
+                            </h6>
+                            <p class="text-muted small {% if event.description_confidence == 'guess' %}guess{% endif %}">
+                                {{ event.description }}
+                                {% if event.description_confidence == 'guess' and event.description_reason %}
+                                    <span class="d-block"><i class="fas fa-lightbulb"></i> 推测：{{ event.description_reason }}</span>
+                                {% endif %}
+                            </p>
                         </div>
                         {% empty %}
                         <p class="text-muted">暂无相关历史事件。</p>

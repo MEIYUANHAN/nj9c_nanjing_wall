@@ -83,9 +83,22 @@ class WallFeedback(models.Model):
 
 class HistoricalEvent(models.Model):
     """历史事件模型"""
+    CONFIDENCE_CHOICES = [
+        ('confirmed', '我确定'),
+        ('guess', '我推测'),
+    ]
     title = models.CharField(max_length=200, verbose_name="事件标题")
     year = models.CharField(max_length=20, verbose_name="发生年份")
     description = models.TextField(verbose_name="事件描述")
+
+    # 双轨可信度（区分「我确定」与「我推测」，推测时需填理由，与城墙段一致）
+    year_confidence = models.CharField(max_length=10, choices=CONFIDENCE_CHOICES,
+                                       default='confirmed', verbose_name="年份可信度")
+    year_reason = models.TextField(verbose_name="年份推测理由", blank=True, null=True)
+    description_confidence = models.CharField(max_length=10, choices=CONFIDENCE_CHOICES,
+                                             default='confirmed', verbose_name="描述可信度")
+    description_reason = models.TextField(verbose_name="描述推测理由", blank=True, null=True)
+
     wall_section = models.ForeignKey(WallSection, on_delete=models.CASCADE, 
                                      related_name='events', verbose_name="相关城墙段落")
     objects = models.Manager()  # 默认管理器
@@ -105,20 +118,3 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
-class UserContribution(models.Model):
-    """用户贡献内容模型"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="贡献者")
-    name = models.CharField(max_length=100, verbose_name="段落名称", null=True, blank=True)
-    location = models.CharField(max_length=200, verbose_name="地理位置", null=True, blank=True)
-    built_year = models.CharField(max_length=50, verbose_name="建造年代", null=True, blank=True)
-    length = models.CharField(max_length=50, verbose_name="长度", null=True, blank=True)
-    description = models.TextField(verbose_name="详细描述",null=True, blank=True)
-    image = models.ImageField(upload_to='images/', verbose_name="图片", blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
-
-    def __str__(self):
-        return self.name if self.name else f"贡献者: {self.user.username} - {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
-    
-    class Meta:
-        verbose_name = "用户贡献"
-        verbose_name_plural = "用户贡献"

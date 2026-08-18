@@ -4,20 +4,96 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">创建历史事件</h1>
+    <h1 class="mb-3"><i class="fas fa-scroll"></i> 创建历史事件</h1>
+    <p class="text-muted mb-4">
+        记录与城墙相关的历史事件时，也请区分
+        <strong>「我确定」</strong>与<strong>「我推测」</strong>：
+        若是依据史料推断的年份或描述，请选「我推测」并说明理由，让知识在碰撞中趋于准确。
+    </p>
+
     <form method="post">
         {% csrf_token %}
-        {{ form.title.label_tag }}
-        {{ form.title }}
-        {{ form.year.label_tag }}
-        {{ form.year }}
-        {{ form.description.label_tag }}
-        {{ form.description }}
-        {{ form.wall_section.label_tag }}
-        {{ form.wall_section }}
+
+        <div class="mb-3">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.year.label_tag }}
+            {{ form.year }}
+            <div class="mt-2">
+                {{ form.year_confidence.label_tag }}
+                <div class="d-flex gap-4">
+                    {% for radio in form.year_confidence %}
+                        <div class="form-check">
+                            {{ radio.tag }}
+                            <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mt-2 guess-reason" id="year_reason_box" style="display:none;">
+                {{ form.year_reason.label_tag }}
+                {{ form.year_reason }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+            <div class="mt-2">
+                {{ form.description_confidence.label_tag }}
+                <div class="d-flex gap-4">
+                    {% for radio in form.description_confidence %}
+                        <div class="form-check">
+                            {{ radio.tag }}
+                            <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mt-2 guess-reason" id="description_reason_box" style="display:none;">
+                {{ form.description_reason.label_tag }}
+                {{ form.description_reason }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.wall_section.label_tag }}
+            {{ form.wall_section }}
+        </div>
+
         <br>
-        <button type="submit" class="btn btn-primary mt-3">提交</button>
+        <button type="submit" class="btn btn-primary mt-2">
+            <i class="fas fa-paper-plane"></i> 提交
+        </button>
     </form>
-    <br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(function () {
+        // 双轨可信度：选择「我推测」时显示对应理由输入框，选择「我确定」时隐藏
+        function toggleReason(radioName, boxId) {
+            var val = $('input[name="' + radioName + '"]:checked').val();
+            if (val === 'guess') {
+                $('#' + boxId).show();
+            } else {
+                $('#' + boxId).hide();
+            }
+        }
+        $('input[name="year_confidence"]').on('change', function () {
+            toggleReason('year_confidence', 'year_reason_box');
+        });
+        $('input[name="description_confidence"]').on('change', function () {
+            toggleReason('description_confidence', 'description_reason_box');
+        });
+        // 页面加载时根据默认值（我确定）设置初始显隐
+        toggleReason('year_confidence', 'year_reason_box');
+        toggleReason('description_confidence', 'description_reason_box');
+    });
+</script>
 {% endblock %}

@@ -20,8 +20,8 @@ class UserRegisterForm(UserCreationForm):
 
 
 
-class UserContributionForm(forms.ModelForm):
-    """用户贡献内容表单（含「慧问慧答」探究增强字段）"""
+class WallSectionForm(forms.ModelForm):
+    """城墙段落表单（含「慧问慧答」探究增强字段）"""
     class Meta:
 
         model = WallSection
@@ -118,10 +118,12 @@ class WallFeedbackForm(forms.ModelForm):
             }),
         }
 class createhistoricaleventForm(forms.ModelForm):
-    """创建历史事件表单"""
+    """创建历史事件表单（含双轨可信度）"""
     class Meta:
         model = HistoricalEvent
-        fields = ['title', 'year', 'description', 'wall_section']
+        fields = ['title', 'year', 'description', 'wall_section',
+                  'year_confidence', 'year_reason',
+                  'description_confidence', 'description_reason']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -142,4 +144,30 @@ class createhistoricaleventForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': '请选择相关城墙段落'
             }),
+            # 双轨可信度：确认/推测单选 + 推测理由
+            'year_confidence': forms.RadioSelect(attrs={
+                'class': 'form-check-input confidence-radio',
+            }),
+            'description_confidence': forms.RadioSelect(attrs={
+                'class': 'form-check-input confidence-radio',
+            }),
+            'year_reason': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': '请简述你的推测理由，例如：我推测是 1366 年，依据《明太祖实录》某条记载'
+            }),
+            'description_reason': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': '请简述你对这段历史描述的推测理由，例如：此为民间传说版本，正史未见明确记载'
+            }),
         }
+
+    def clean(self):
+        """校验：选择「我推测」时必须填写对应推测理由"""
+        cleaned = super().clean()
+        if cleaned.get('year_confidence') == 'guess' and not cleaned.get('year_reason'):
+            self.add_error('year_reason', '选择「我推测」年份时需填写推测理由')
+        if cleaned.get('description_confidence') == 'guess' and not cleaned.get('description_reason'):
+            self.add_error('description_reason', '选择「我推测」描述时需填写推测理由')
+        return cleaned
