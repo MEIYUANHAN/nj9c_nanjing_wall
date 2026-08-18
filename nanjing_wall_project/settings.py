@@ -12,8 +12,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import logging
+import secrets
 
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +30,31 @@ load_dotenv(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-clr$lbhrna6twfp#vwv9^@61x84u$#3*md@_*n1ajpsc2vw^sp')
+# 绝不在源码中硬编码任何密钥（历史版本曾含一个公开字面量，存在会话伪造风险）。
+# 解析优先级：
+#   1) 环境变量 SECRET_KEY（生产首选，Railway 通过环境变量注入）；
+#   2) 本地文件 .secret_key（首次自动生成并持久化，保证开发/重启后稳定，已被 .gitignore 忽略）；
+#   3) 以上皆无时，进程内临时生成（仅当前进程有效，重启失效）并告警。
+def _resolve_secret_key():
+    env_key = os.environ.get('SECRET_KEY')
+    if env_key:
+        return env_key
+    secret_file = BASE_DIR / '.secret_key'
+    if secret_file.exists():
+        return secret_file.read_text(encoding='utf-8').strip()
+    # 本地开发兜底：自动生成并落盘，避免每次重启换新 key 导致已登录用户被登出。
+    new_key = secrets.token_urlsafe(50)
+    try:
+        secret_file.write_text(new_key, encoding='utf-8')
+    except OSError as exc:
+        logger.warning("无法写入 .secret_key 文件（%s），将使用临时密钥，重启后会失效。", exc)
+    logger.warning(
+        "未通过环境变量 SECRET_KEY 提供密钥，已自动生成并保存到 .secret_key。"
+        "生产环境请务必通过环境变量注入一个稳定密钥。"
+    )
+    return new_key
+
+SECRET_KEY = _resolve_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
@@ -93,16 +121,40 @@ WSGI_APPLICATION = 'nanjing_wall_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# 数据库放在「非云同步」的本地目录，避免 OneDrive 同步锁定 db 文件导致登录时
+# 报 "attempt to write a readonly database"（登录会写 session + 更新 last_login）。
+# 默认落到 %LOCALAPPDATA%\nanjing_wall（Windows 不会云同步该目录）；可用环境变量
+# NANJING_WALL_DB_DIR 覆盖，例如部署到服务器时指向本地磁盘路径。
+_DB_DIR = os.environ.get("NANJING_WALL_DB_DIR") or os.path.join(
+    os.environ.get("LOCALAPPDATA", str(BASE_DIR)), "nanjing_wall"
+)
+os.makedirs(_DB_DIR, exist_ok=True)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(_DB_DIR, 'db.sqlite3'),
+        'OPTIONS': {
+            # SQLite 在并发写入（如登录时写 session、更新 last_login）时极易报
+            # "database is locked" 的 OperationalError。timeout 让连接阻塞等待锁释放，
+            # 而不是立刻报错；check_same_thread=False 是 Django 多线程服务器
+            # (waitress/runserver) 下复用连接所必需的，否则跨线程使用连接会抛异常。
+            'timeout': 30,
+            'check_same_thread': False,
+        },
     }
 }
 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+
+# 认证相关：未登录用户访问 @login_required 视图时，Django 会重定向到 LOGIN_URL。
+# 若不显式设置，默认值 '/accounts/login/' 在本项目中并不存在，会导致所有受保护页面
+# （个人主页、我的贡献、创作城墙段落、创建历史事件）对游客返回 404 而非跳转到登录页。
+LOGIN_URL = '/login/'
+# 登录后默认跳转地址（user_login 视图自身已显式重定向到首页，这里仅作为兜底）。
+LOGIN_REDIRECT_URL = '/'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -165,9 +217,34 @@ else:
     # 开发环境：使用本地文件系统
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
+
+# ---------------------------------------------------------------------------
+# SQLite 并发/锁容错（仅对 sqlite3 生效，若将来切换 Postgres 则自动跳过）
+# 登录会写 session + 更新 last_login，是写操作；Django 多线程 runserver 与
+# 自动重载器(reloader)会持有多个连接，容易触发 "database is locked" 这类
+# OperationalError。WAL 日志模式允许读写并发、busy_timeout 让写操作阻塞等待
+# 而非立即报错，synchronous=NORMAL 在 WAL 下既安全又更快。
+# ---------------------------------------------------------------------------
+from django.db.backends.signals import connection_created
+from django.dispatch import receiver
+
+
+@receiver(connection_created)
+def _configure_sqlite_connection(sender, connection, **kwargs):
+    if connection.settings_dict['ENGINE'].endswith('sqlite3'):
+        with connection.cursor() as cur:
+            cur.execute("PRAGMA journal_mode=WAL;")
+            cur.execute("PRAGMA busy_timeout=30000;")
+            cur.execute("PRAGMA synchronous=NORMAL;")
+
 # DeepSeek API 配置
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
+# 内容审核失败时的策略：
+#   True  = 严格模式，审核服务不可用（或无密钥）时直接拒绝提交 —— 更安全，但第三方抖动会导致投稿被拦；
+#   False = 宽松模式（默认），审核失败时放行并告警，依赖人工复核 —— 更稳健，但内容安全依赖人工。
+# 生产环境建议设为 True 并配置真实 DEEPSEEK_API_KEY。
+DEEPSEEK_MODERATION_FAIL_CLOSED = os.environ.get('DEEPSEEK_MODERATION_FAIL_CLOSED', 'False').lower() == 'true'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

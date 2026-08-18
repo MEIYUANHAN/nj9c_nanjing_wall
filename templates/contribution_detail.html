@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}投稿详情 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <a href="{% url 'user_contributions' %}" class="btn btn-outline-secondary mb-4">
+        <i class="fas fa-arrow-left"></i> 返回我的贡献
+    </a>
+
+    <div class="card">
+        {% if contribution.image %}
+        <img src="{{ contribution.image.url }}" class="card-img-top" alt="{{ contribution.name }}">
+        {% endif %}
+        <div class="card-body">
+            <h1 class="card-title">{{ contribution.name|default:"未命名投稿" }}</h1>
+            <ul class="list-group list-group-flush mt-3">
+                <li class="list-group-item"><strong><i class="fas fa-map-marker-alt"></i> 位置：</strong> {{ contribution.location }}</li>
+                <li class="list-group-item"><strong><i class="fas fa-calendar-alt"></i> 建造年代：</strong> {{ contribution.built_year }}</li>
+                <li class="list-group-item"><strong><i class="fas fa-ruler"></i> 长度：</strong> {{ contribution.length }}</li>
+                <li class="list-group-item"><strong><i class="fas fa-user"></i> 投稿人：</strong> {{ contribution.user.username }}</li>
+                <li class="list-group-item"><strong><i class="fas fa-clock"></i> 投稿时间：</strong> {{ contribution.created_at|date:"Y-m-d H:i" }}</li>
+            </ul>
+            <div class="mt-4">
+                <h5>详细描述</h5>
+                <p class="card-text">{{ contribution.description|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

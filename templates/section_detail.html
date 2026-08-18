@@ -9,11 +9,24 @@
     <a href="{% url 'home' %}" class="btn btn-outline-secondary mb-4">
         <i class="fas fa-arrow-left"></i> 返回首页
     </a>
-    
+
+    <!-- 方案三：待考证横幅 -->
+    {% if section.is_pending %}
+    <div class="dispute-banner">
+        <i class="fas fa-triangle-exclamation"></i>
+        <strong>待考证：</strong>该城墙段已收到 {{ section.challenge_count }} 位不同用户的不同看法，信息尚存争议，欢迎你补充证据或参与讨论。
+    </div>
+    {% endif %}
+
     <!-- 城墙详情 -->
     <div class="row">
         <div class="col-md-8">
-            <h1 class="mb-4">{{ section.name }}</h1>
+            <h1 class="mb-4">
+                {{ section.name }}
+                {% if section.is_pending %}
+                    <span class="dispute-badge ms-2">待考证</span>
+                {% endif %}
+            </h1>
             <div class="card mb-4">
                 {% if section.image %}
                 <img src="{{ section.image.url }}" class="card-img-top" alt="{{ section.name }}">
@@ -24,27 +37,64 @@
                         <li class="list-group-item">
                             <strong><i class="fas fa-map-marker-alt"></i> 位置：</strong> {{ section.location }}
                         </li>
-                        <li class="list-group-item">
+                        {# 方案二：建造年代——推测内容用虚线边框 + 问号标示 #}
+                        <li class="list-group-item {% if section.built_year_confidence == 'guess' %}guess{% endif %}">
                             <strong><i class="fas fa-calendar-alt"></i> 建造年代：</strong> {{ section.built_year }}
+                            {% if section.built_year_confidence == 'guess' %}
+                                <i class="fas fa-question-circle guess-mark" title="此为推测内容，欢迎验证或反驳"></i>
+                                <span class="badge bg-warning text-dark">我推测</span>
+                                {% if section.built_year_reason %}
+                                    <div class="text-muted small mt-1"><i class="fas fa-lightbulb"></i> 推测理由：{{ section.built_year_reason }}</div>
+                                {% endif %}
+                            {% endif %}
                         </li>
-                        <li class="list-group-item">
+                        {# 方案二：长度——推测内容用虚线边框 + 问号标示 #}
+                        <li class="list-group-item {% if section.length_confidence == 'guess' %}guess{% endif %}">
                             <strong><i class="fas fa-ruler"></i> 长度：</strong> {{ section.length }}
+                            {% if section.length_confidence == 'guess' %}
+                                <i class="fas fa-question-circle guess-mark" title="此为推测内容，欢迎验证或反驳"></i>
+                                <span class="badge bg-warning text-dark">我推测</span>
+                                {% if section.length_reason %}
+                                    <div class="text-muted small mt-1"><i class="fas fa-lightbulb"></i> 推测理由：{{ section.length_reason }}</div>
+                                {% endif %}
+                            {% endif %}
                         </li>
-                        <li class="list-group-item">
-                            <strong><i class="fas fa-user"></i> 创作者：</strong> {{ section.user }}
-                        </li>
+                    <li class="list-group-item">
+                        <strong><i class="fas fa-user"></i> 创作者：</strong>{% if section.user %} <a href="{% url 'user_profile_detail' section.user.id %}" class="text-decoration-none">{{ section.user }}</a>{% else %}匿名{% endif %}
+                    </li>
                     </ul>
                 </div>
             </div>
-            
+
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">详细描述</h5>
                     <p class="card-text">{{ section.description|linebreaks }}</p>
                 </div>
             </div>
+
+            <!-- 创建者填写的「相关历史事件」文本（WallSection.event） -->
+            {% if section.event %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-book-open"></i> 历史事件记载</h5>
+                    <p class="card-text">{{ section.event|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 方案一：探究发现（独立区块展示） -->
+            {% if section.has_discovery %}
+            <div class="discovery-box mb-4">
+                <div class="discovery-title mb-2">
+                    <i class="fas fa-magnifying-glass"></i> 探究发现
+                    <span class="badge bg-secondary">待验证猜想</span>
+                </div>
+                <p class="mb-0">{{ section.discovery|linebreaks }}</p>
+            </div>
+            {% endif %}
         </div>
-        
+
         <div class="col-md-4">
             <!-- 历史事件时间线 -->
             <div class="card">
@@ -62,6 +112,77 @@
                         <p class="text-muted">暂无相关历史事件。</p>
                         {% endfor %}
                     </div>
+                </div>
+            </div>
+
+            <!-- 方案三：互证与质疑 -->
+            <div class="card mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-comments"></i> 互证与质疑</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <span class="badge bg-success">补充证据 {{ section.evidence_count }} 条</span>
+                        <span class="badge bg-danger">不同看法 {{ section.challenge_count }} 条</span>
+                        {% if section.is_pending %}
+                            <span class="dispute-badge">待考证</span>
+                        {% endif %}
+                    </p>
+
+                    {% if user.is_authenticated %}
+                        <!-- 我来补充证据 -->
+                        <form method="post" action="{% url 'create_feedback' section.id %}" enctype="multipart/form-data" class="mb-3">
+                            {% csrf_token %}
+                            {{ evidence_form.feedback_type.as_hidden }}
+                            <label class="form-label fw-bold text-success"><i class="fas fa-plus-circle"></i> 我来补充证据</label>
+                            {{ evidence_form.content }}
+                            <label class="form-label mt-2">{{ evidence_form.image.label }}</label>
+                            {{ evidence_form.image }}
+                            <button type="submit" class="btn btn-success btn-sm mt-2">
+                                <i class="fas fa-upload"></i> 提交证据
+                            </button>
+                        </form>
+
+                        <hr>
+
+                        <!-- 我有不同看法 -->
+                        <form method="post" action="{% url 'create_feedback' section.id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ challenge_form.feedback_type.as_hidden }}
+                            <label class="form-label fw-bold text-danger"><i class="fas fa-comment-dots"></i> 我有不同看法</label>
+                            {{ challenge_form.content }}
+                            <label class="form-label mt-2">{{ challenge_form.image.label }}</label>
+                            {{ challenge_form.image }}
+                            <button type="submit" class="btn btn-danger btn-sm mt-2">
+                                <i class="fas fa-comment"></i> 提交看法
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            <a href="{% url 'login' %}">登录</a> 后可补充证据或提出不同看法。
+                        </p>
+                    {% endif %}
+
+                    <!-- 反馈列表 -->
+                    {% if feedbacks %}
+                    <hr>
+                    <h6 class="text-muted">近期反馈</h6>
+                    {% for fb in feedbacks %}
+                        <div class="feedback-item {% if fb.feedback_type == 'evidence' %}feedback-evidence{% else %}feedback-challenge{% endif %} ps-2">
+                            <div class="small">
+                                <span class="badge {% if fb.feedback_type == 'evidence' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ fb.get_feedback_type_display }}
+                                </span>
+                                <strong><a href="{% url 'user_profile_detail' fb.user.id %}" class="text-decoration-none">{{ fb.user.username }}</a></strong>
+                                <span class="text-muted">{{ fb.created_at|date:"Y-m-d H:i" }}</span>
+                            </div>
+                            <div>{{ fb.content|linebreaks }}</div>
+                            {% if fb.image %}
+                                <img src="{{ fb.image.url }}" class="img-fluid rounded mt-1" style="max-height:160px;" alt="证据图片">
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>

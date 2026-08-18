@@ -112,7 +112,7 @@ pip install -r requirements.txt
 
 ## 额外说明
 
-1. **内容审核逻辑**：当前配置使用 `deepseek-v4-flash` 模型进行快速审核。你可以根据需要修改 `utils.py` 中的模型配置。
+1. **内容审核逻辑**：当前配置使用 `deepseek-chat` 模型进行快速审核（注意：DeepSeek 可用的对话模型为 `deepseek-chat` 与 `deepseek-reasoner`，并不存在 `deepseek-v4-flash`）。你可以根据需要修改 `utils.py` 中的模型配置。
 
 2. **审核提示词**：在 `utils.py` 的 `check_content_with_deepseek` 函数中，可以修改系统提示词来调整审核标准。
 

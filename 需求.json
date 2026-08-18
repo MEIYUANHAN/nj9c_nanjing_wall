@@ -1,0 +1,172 @@
+{
+  "项目背景": "南京明城墙网站（Django 项目）现有‘城墙信息档案库’共创功能，字段为：name（名称）、location（地理位置）、built_year（建造年代）、length（长度）、description（详细描述）、event（相关历史事件）、image（图片）。数据库模型为 wall_app/models.py 中的 WallSection。表单为 wall_app/forms.py 中的 UserContributionForm（绑定 WallSection，字段为 name/location/built_year/length/description/event/image）。现需为参加‘慧问慧答’活动改造项目，加入‘探究’灵魂，让上传数据成为探究行为，呼应‘慧问’精神。",
+  "比赛适配目标": "把‘信息提供者’升级为‘问题提出者’，培养科学探究核心素养（区分事实与观点、鼓励基于证据的推测、知识在碰撞中趋于准确）。",
+  "涉及文件总览": [
+    "wall_app/models.py（模型字段与新建模型）",
+    "wall_app/forms.py（表单字段与控件）",
+    "wall_app/views.py（提交审核、首页、详情展示逻辑）",
+    "wall_app/urls.py（新增路由，仅方案三需要）",
+    "wall_app/migrations/（每次改模型后需生成并迁移）",
+    "templates/create_contribution.html（贡献表单页）",
+    "templates/section_detail.html（城墙段落详情页）",
+    "templates/home.html（首页，用于‘市民发现’/‘待考证’高亮模块）",
+    "static/ 或 templates 内联 CSS（推测信息虚线边框/问号图标样式）"
+  ],
+  "现有字段参考": {
+    "模型": "WallSection(name, location, built_year, length, description, event, image, user, created_at)",
+    "表单字段": ["name", "location", "built_year", "length", "description", "event", "image"],
+    "详情页视图": "section_detail(request, section_id) -> 渲染 section + events",
+    "首页视图": "home(request) -> 渲染 sections + contributions"
+  },
+  "修改方案": {
+    "方案一_探究发现字段": {
+      "优先级": "最高（最轻量，建议先做）",
+      "目标": "在表单增加非必填‘探究发现’文本框，引导用户思考‘为什么/怎么样’，把信息提供者变成问题提出者。",
+      "具体修改点": [
+        {
+          "文件": "wall_app/models.py",
+          "类型": "新增字段",
+          "位置": "WallSection 类",
+          "改动": "新增 discovery = models.TextField(verbose_name='探究发现', blank=True, null=True)，用于存储用户的发现或猜想。",
+          "备注": "推测内容建议后台标记为‘待验证猜想’（可加 status 字段或仅通过是否有 discovery 内容筛选）。"
+        },
+        {
+          "文件": "wall_app/forms.py",
+          "类型": "表单字段+控件",
+          "位置": "UserContributionForm.Meta.fields",
+          "改动": "fields 列表增加 'discovery'；在 widgets 中为其添加 Textarea，placeholder 示例：‘关于这段城墙，你有什么有趣的发现或猜想？（例如：城砖铭文很特别 / 为什么这里有个缺口？）’。"
+        },
+        {
+          "文件": "templates/create_contribution.html",
+          "类型": "模板",
+          "位置": "‘详细描述’(description) 字段下方",
+          "改动": "渲染 discovery 字段，并显示一行引导提示文字（与 placeholder 一致）。"
+        },
+        {
+          "文件": "wall_app/views.py",
+          "类型": "视图逻辑",
+          "位置": "create_contribution() 审核数据 preparation",
+          "改动": "把 discovery 也纳入审核数据对象（或允许 discovery 不强制过审核直接保存），确保提交时一并保存。"
+        },
+        {
+          "文件": "templates/home.html",
+          "类型": "模板",
+          "位置": "首页新增‘市民发现’模块",
+          "改动": "展示 discovery 非空的 WallSection/UserContribution 列表（可限定数量，如最新 5 条），标注‘待验证猜想’，呼应‘慧问’。"
+        },
+        {
+          "文件": "templates/section_detail.html",
+          "类型": "模板",
+          "位置": "详情页展示区",
+          "改动": "若存在 discovery 内容，单独区块展示‘探究发现’。"
+        },
+        {
+          "文件": "wall_app/migrations/",
+          "类型": "迁移",
+          "改动": "改完模型后执行 makemigrations + migrate。"
+        }
+      ]
+    },
+    "方案二_双轨可信度输入": {
+      "优先级": "次高（方案一跑通后做，投入产出比高）",
+      "目标": "为 built_year 和 length 提供‘我确定’/‘我推测’切换，选推测则要求填‘理由简述’，后端存 confidence_level，展示时推测信息用虚线边框/问号图标标示。",
+      "具体修改点": [
+        {
+          "文件": "wall_app/models.py",
+          "类型": "新增字段",
+          "位置": "WallSection 类",
+          "改动": "新增：built_year_confidence = models.CharField(max_length=10, choices=[('confirmed','我确定'),('guess','我推测')], default='confirmed')；length_confidence 同理；built_year_reason = models.TextField(blank=True, null=True, verbose_name='推测理由')；length_reason 同理。"
+        },
+        {
+          "文件": "wall_app/forms.py",
+          "类型": "表单字段+控件",
+          "位置": "UserContributionForm",
+          "改动": "fields 增加 built_year_confidence, length_confidence, built_year_reason, length_reason；为 confidence 用 RadioSelect 或自定义开关控件，选择‘我推测’时显示对应 reason 输入框（前端用 JS 控制显隐）。"
+        },
+        {
+          "文件": "templates/create_contribution.html",
+          "类型": "模板+JS",
+          "位置": "built_year / length 字段旁",
+          "改动": "渲染切换开关与理由框；加少量 JS：选‘我推测’才显示理由框。"
+        },
+        {
+          "文件": "wall_app/views.py",
+          "类型": "视图逻辑",
+          "位置": "create_contribution()",
+          "改动": "确保 confidence 与 reason 字段随表单保存（form.save 已含则无需额外处理）。"
+        },
+        {
+          "文件": "templates/section_detail.html / home.html",
+          "类型": "模板样式",
+          "改动": "当某字段 confidence='guess' 时，用虚线边框或问号图标标示，并显示推测理由，鼓励后来者验证/反驳。"
+        },
+        {
+          "文件": "static/ 或模板内联 CSS",
+          "类型": "样式",
+          "改动": "新增 .guess 类（虚线边框、问号角标）。"
+        },
+        {
+          "文件": "wall_app/migrations/",
+          "类型": "迁移",
+          "改动": "makemigrations + migrate。"
+        }
+      ]
+    },
+    "方案三_互证与质疑机制": {
+      "优先级": "最后（互动性最强，前两个跑通后再扩展）",
+      "目标": "每个档案页底部加‘我来补充证据’（上传图片/文献截图）和‘我有不同看法’（输入反驳理由）按钮；显示‘证据数量’和‘争议状态’；被 3 个不同用户质疑时自动标记‘待考证’并在列表页高亮。",
+      "具体修改点": [
+        {
+          "文件": "wall_app/models.py",
+          "类型": "新增模型",
+          "位置": "新增类（如 WallFeedback）",
+          "改动": "WallFeedback(wall_section FK, user FK, feedback_type CHOICES[('evidence','补充证据'),('challenge','不同看法')], content TextField, image ImageField blank, created_at)。另在 WallSection 增加 challenge_count(IntegerField default=0)、evidence_count(IntegerField default=0)、dispute_status(CharField choices=[('normal','正常'),('pending','待考证')] default='normal')。"
+        },
+        {
+          "文件": "wall_app/forms.py",
+          "类型": "新增表单",
+          "位置": "新增 WallFeedbackForm",
+          "改动": "字段含 feedback_type、content、image，绑定 WallFeedback。"
+        },
+        {
+          "文件": "wall_app/views.py",
+          "类型": "新增视图+逻辑",
+          "位置": "新增 create_feedback(request, section_id)",
+          "改动": "登录用户提交反馈：保存 WallFeedback，更新 WallSection 的 evidence_count/challenge_count；当 challenge_count>=3 且来自不同用户时，dispute_status 置为 'pending'。"
+        },
+        {
+          "文件": "wall_app/urls.py",
+          "类型": "新增路由",
+          "位置": "urlpatterns",
+          "改动": "path('section/<int:section_id>/feedback/', create_feedback, name='create_feedback')。"
+        },
+        {
+          "文件": "templates/section_detail.html",
+          "类型": "模板",
+          "位置": "档案页底部",
+          "改动": "渲染两个按钮（表单）‘我来补充证据’‘我有不同看法’，并显示当前证据数量、争议状态。"
+        },
+        {
+          "文件": "templates/home.html（或列表页）",
+          "类型": "模板",
+          "位置": "列表项",
+          "改动": "dispute_status='pending' 的城墙段高亮显示‘待考证’，吸引更多人参与。"
+        },
+        {
+          "文件": "wall_app/migrations/",
+          "类型": "迁移",
+          "改动": "makemigrations + migrate。"
+        }
+      ]
+    }
+  },
+  "建议执行顺序": ["方案一（探究发现字段）", "方案二（双轨可信度输入）", "方案三（互证与质疑机制）"],
+  "验收标准": [
+    "方案一：表单出现‘探究发现’框；首页有‘市民发现’模块；详情页展示 discovery。",
+    "方案二：built_year/length 可切换‘确定/推测’并填理由；详情页推测内容以虚线/问号标示。",
+    "方案三：详情页有补充证据/不同看法按钮；3 个不同用户质疑后列表页高亮‘待考证’。",
+    "所有改动生成迁移并 migrate 成功，python manage.py check 无报错，本地 runserver 可正常提交与展示。",
+    "DeepSeek 审核（check_contribution_with_deepseek）仍正常工作，新增字段不破坏既有审核流程。"
+  ],
+  "备注": "原 AI回答.txt 中‘方案一’提示文案、‘方案二’示例（‘我推测是明代，因为砖的质地和中华门很像’）、‘方案三’的 3 人质疑阈值，均直接来自用户提供的材料，执行时按原文实现。"
+}

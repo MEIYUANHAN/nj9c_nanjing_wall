@@ -1,5 +1,6 @@
 <!-- templates/home.html -->
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}首页 - 南京城墙历史{% endblock %}
 
@@ -39,11 +40,16 @@
                 {% if section.image %}
                 <img src="{{ section.image.url }}" class="card-img-top section-img" alt="{{ section.name }}">
                 {% else %}
-                <img src="https://via.placeholder.com/400x200?text={{ section.name }}" 
+                <img src="{% static 'placeholder.svg' %}"
                      class="card-img-top section-img" alt="{{ section.name }}">
                 {% endif %}
                 <div class="card-body">
-                    <h5 class="card-title">{{ section.name }}</h5>
+                    <h5 class="card-title">
+                        {{ section.name }}
+                        {% if section.is_pending %}
+                            <span class="dispute-badge">待考证</span>
+                        {% endif %}
+                    </h5>
                     <p class="card-text">
                         <i class="fas fa-map-marker-alt"></i> {{ section.location }}
                     </p>
@@ -70,6 +76,33 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- 市民发现（方案一：「慧问」探究模块） -->
+{% if discoveries %}
+<div class="container mt-5">
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-magnifying-glass text-purple"></i> 市民发现</h2>
+        <span class="badge bg-secondary ms-3">待验证猜想 · 慧问慧答</span>
+    </div>
+    <p class="text-muted">以下城墙段由市民上传了「探究发现」，欢迎你前往详情页补充证据或提出不同看法，让知识在碰撞中趋于准确。</p>
+    <div class="row">
+        {% for d in discoveries %}
+        <div class="col-md-6 mb-3">
+            <div class="card discovery-card h-100">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-location-dot"></i> {{ d.name }}</h6>
+                    <p class="card-text small text-muted mb-1"><i class="fas fa-map-marker-alt"></i> {{ d.location }}</p>
+                    <p class="card-text">{{ d.discovery|truncatechars:90|linebreaks }}</p>
+                    <a href="{% url 'section_detail' d.id %}" class="btn btn-sm btn-outline-secondary">
+                        去验证 / 讨论 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 <!-- 特色功能 -->
 <div class="container mt-5">

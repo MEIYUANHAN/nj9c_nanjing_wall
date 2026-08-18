@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}我的贡献 - 南京城墙历史{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4"><i class="fas fa-pen-nib"></i> 我的贡献</h1>
+
+    <h3 class="mt-4">城墙段落</h3>
+    {% if sections %}
+    <div class="row">
+        {% for section in sections %}
+        <div class="col-md-4 mb-4">
+            <div class="card section-card h-100">
+                {% if section.image %}
+                <img src="{{ section.image.url }}" class="card-img-top section-img" alt="{{ section.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ section.name }}
+                        {% if section.is_pending %}
+                            <span class="dispute-badge">待考证</span>
+                        {% endif %}
+                    </h5>
+                    <p class="card-text"><i class="fas fa-map-marker-alt"></i> {{ section.location }}</p>
+                    <p class="card-text">{{ section.description|truncatechars:50 }}</p>
+                    <a href="{% url 'section_detail' section.id %}" class="btn btn-outline-primary">查看详情</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">你还没有创建城墙段落。<a href="{% url 'create_contribution' %}">去创建一个</a>。</p>
+    {% endif %}
+
+    {# 用户创建的新城墙段统一以「城墙段落」形式展示；早期投稿记录(UserContribution)已不再产生，故不单独列出。 #}
+</div>
+{% endblock %}

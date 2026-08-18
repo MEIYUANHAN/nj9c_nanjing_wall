@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
+  <rect width="400" height="200" fill="#e9ecef"/>
+  <rect x="0" y="0" width="400" height="6" fill="#8B4513"/>
+  <text x="200" y="96" fill="#adb5bd" font-size="22" font-family="'Microsoft YaHei',sans-serif" text-anchor="middle">暂无图片</text>
+  <text x="200" y="128" fill="#adb5bd" font-size="14" font-family="'Microsoft YaHei',sans-serif" text-anchor="middle">南京明城墙</text>
+</svg>

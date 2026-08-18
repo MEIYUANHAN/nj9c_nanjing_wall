@@ -77,6 +77,59 @@
         .contribution-card {
             border-left: 4px solid #8B4513;
         }
+        /* ===== 「慧问慧答」探究增强样式 ===== */
+        /* 方案二：推测内容用虚线边框 + 问号角标标示 */
+        .guess {
+            border: 2px dashed #e0a800 !important;
+            border-radius: 6px;
+            background: #fffdf3;
+        }
+        .guess-mark {
+            color: #e0a800;
+            margin-left: 6px;
+            cursor: help;
+        }
+        /* 方案一：探究发现展示块（紫色，呼应「慧问」） */
+        .discovery-box {
+            border-left: 4px solid #6f42c1;
+            background: #f7f4ff;
+            padding: 14px 18px;
+            border-radius: 6px;
+        }
+        .discovery-box .discovery-title {
+            color: #6f42c1;
+            font-weight: 600;
+        }
+        /* 方案三：待考证徽标 */
+        .dispute-badge {
+            display: inline-block;
+            background: #dc3545;
+            color: #fff;
+            font-size: 0.8rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .dispute-banner {
+            background: #fff3f3;
+            border: 1px solid #f5c2c7;
+            color: #b02a37;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+        /* 首页「市民发现」模块 */
+        .discovery-card {
+            border-left: 4px solid #6f42c1;
+            background: #f7f4ff;
+        }
+        .feedback-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .feedback-item:last-child { border-bottom: none; }
+        .feedback-evidence { border-left: 4px solid #198754; }
+        .feedback-challenge { border-left: 4px solid #dc3545; }
         .map-container {
             height: 960px;
             margin-bottom: 0px;

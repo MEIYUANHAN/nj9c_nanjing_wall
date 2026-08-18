@@ -7,5 +7,6 @@ media/
 staticfiles/
 *.env
 *.md
+.secret_key
 .workbuddy/
 .cloudflare-tunnel/

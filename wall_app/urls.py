@@ -8,6 +8,7 @@ urlpatterns = [
     path('map/', views.map_view, name='interactive_map'),
     path('history/', views.history_view, name='history'),
     path('section/<int:section_id>/', views.section_detail, name='section_detail'),
+    path('section/<int:section_id>/feedback/', views.create_feedback, name='create_feedback'),
     path('pictures/', views.picture_gallery, name='picture_gallery'),
     path('contribution_detail/<int:contribution_id>/', views.contribution_detail, name='contribution_detail'),
     path('create_historical_event/', views.create_historical_event, name='create_historical_event'),
@@ -21,6 +22,7 @@ urlpatterns = [
     path('create_contribution/', views.create_contribution, name='create_contribution'),
     path('contributions/', views.user_contributions, name='user_contributions'),
     path('profile/', views.user_profile, name='user_profile'),
+    path('profile/<int:user_id>/', views.user_profile, name='user_profile_detail'),
 
     # 彩蛋
     re_path(r'^mer/?$', views.mer_page, name='mer_page'),
